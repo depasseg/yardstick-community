@@ -71,6 +71,10 @@ What makes a build trustworthy:
   mismatch. The hashes are also recorded on the image (labels `io.yardstick.deb.sha256.amd64` / `.arm64`).
 - The Debian base image is **pinned by digest** (Renovate bumps it), so a rebuild of the same
   commit produces the same image.
+- Every build is **scanned with Trivy** before it is pushed: HIGH and CRITICAL findings go to
+  this repository's Security tab, and a CRITICAL one with a fix available stops the push. (Trivy
+  sees the Debian packages and the libraries Yardstick bundles; it can't audit the vendor's own
+  code, which is what the signature check is for.)
 - The package is unpacked as-is; nothing inside is modified. Compare the image's `/opt/yardstick`
   with your own `.deb` if you like.
 
