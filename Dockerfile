@@ -29,21 +29,24 @@ RUN set -eux; \
     echo "${sha256}  /yardstick.deb" | sha256sum -c -; \
     [ "$(dpkg-deb -f /yardstick.deb Version)" = "$version" ]; \
     [ "$(dpkg-deb -f /yardstick.deb Architecture)" = "${TARGETARCH}" ]; \
-    echo "$version" > /yardstick.version
+    # Unpack here, not onto the runtime image's /: the package carries a lib/systemd/ directory,
+    # and extracting it over Debian's /lib -> usr/lib symlink replaces the symlink with a plain
+    # directory (which breaks the dynamic loader on arm64). Only /opt and the docs are copied over.
+    dpkg-deb -x /yardstick.deb /pkg; \
+    echo "$version" > /pkg/opt/yardstick/VERSION
 
 # --- runtime image -----------------------------------------------------------------------------
 FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4
-COPY --from=deb /yardstick.deb /yardstick.version /tmp/
+# The package's files, minus its systemd units. The maintainer scripts don't run; the container
+# replaces what postinst does (user, data dir, service).
+COPY --from=deb /pkg/opt/yardstick /opt/yardstick
+COPY --from=deb /pkg/usr/share/doc/yardstick /usr/share/doc/yardstick
 
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates tzdata curl; \
     rm -rf /var/lib/apt/lists/*; \
-    # Unpack without running the maintainer scripts; the container replaces what postinst does
-    # (user, data dir, systemd units).
-    dpkg-deb -x /tmp/yardstick.deb /; \
-    rm -f /tmp/yardstick.deb; \
-    rm -rf /lib/systemd/system/yardstick*; \
+    ln -s /opt/yardstick/yardstick /usr/bin/yardstick; \
     useradd --system --uid 1000 --user-group --home-dir /var/lib/yardstick \
             --shell /usr/sbin/nologin --comment "Yardstick recorder" yardstick; \
     mkdir -p /var/lib/yardstick; chown yardstick:yardstick /var/lib/yardstick; \
