@@ -6,8 +6,8 @@ for Linux PCs. This repository packages that official `.deb`, unchanged, into a 
 for people who run their home services on Docker, Unraid, Synology, Proxmox or Kubernetes.
 
 ```
-ghcr.io/depasseg/yardstick:<version>   # e.g. 1.2.7
-ghcr.io/depasseg/yardstick:latest
+ghcr.io/depasseg/yardstick-community:<version>   # e.g. 1.2.7
+ghcr.io/depasseg/yardstick-community:latest
 ```
 
 Published with the permission of Yardstick Technologies LLC. **This is a community image, not
@@ -20,7 +20,7 @@ Yardstick itself, use [their support](https://yardstickhome.com/support/).
 docker run -d --name yardstick --restart unless-stopped \
   -p 8477:8477 -e TZ=America/New_York \
   -v yardstick-data:/var/lib/yardstick \
-  ghcr.io/depasseg/yardstick:latest
+  ghcr.io/depasseg/yardstick-community:latest
 ```
 
 Open `http://<host>:8477`, sign in to your Yarbo account, and activate or start your licence.
@@ -57,7 +57,7 @@ behind Traefik, Caddy, nginx, Envoy and friends with nothing special.
 ## How the image is built and updated
 
 Yardstick releases often. [`build.yaml`](.github/workflows/build.yaml) runs every 6 hours:
-it downloads the vendor's `.deb`, reads its version, and if `ghcr.io/depasseg/yardstick:<version>`
+it downloads the vendor's `.deb`, reads its version, and if `ghcr.io/depasseg/yardstick-community:<version>`
 doesn't exist yet, builds the [Dockerfile](Dockerfile) and pushes it. So a new tag appears
 within a few hours of each release, and `latest` follows. Each image records the `.deb`'s
 SHA-256 in the label `io.yardstick.deb.sha256`.

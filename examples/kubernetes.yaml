@@ -32,7 +32,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: yardstick
-          image: ghcr.io/depasseg/yardstick:latest   # pin a version in production
+          image: ghcr.io/depasseg/yardstick-community:latest   # pin a version in production
           ports:
             - containerPort: 8477
           env:
