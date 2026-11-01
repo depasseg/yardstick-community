@@ -25,7 +25,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/yardstick
+  IMAGE: ghcr.io/${{ github.repository_owner }}/yardstick-community
   DEB_URL: https://yardstickhome.com/download/yardstick_amd64.deb
 
 jobs:

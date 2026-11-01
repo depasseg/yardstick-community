@@ -1,4 +1,4 @@
-# Yardstick in a container
+# Yardstick community container image
 
 [Yardstick](https://yardstickhome.com) records your Yarbo lawn robot's telemetry, draws the
 yard map, lets you edit it and schedules work, all on your own network. It ships as a `.deb`
@@ -10,8 +10,8 @@ ghcr.io/depasseg/yardstick-community:<version>   # e.g. 1.2.7
 ghcr.io/depasseg/yardstick-community:latest
 ```
 
-Published with the permission of Yardstick Technologies LLC. **This is a community image, not
-an official one.** For problems with the container, open an issue here; for problems with
+Published with the permission of Yardstick Technologies LLC. **This is a community image, not an
+official one, hence the name.** For problems with the container, open an issue here; for problems with
 Yardstick itself, use [their support](https://yardstickhome.com/support/).
 
 ## Quick start
