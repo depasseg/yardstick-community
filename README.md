@@ -4,13 +4,15 @@
 yard map, lets you edit it and schedules work, all on your own network. It ships as a `.deb`
 for Linux PCs. This repository packages that official `.deb`, unchanged, into a container image
 for people who run their home services on Docker, Unraid, Synology, Proxmox or Kubernetes.
+Built for **amd64 and arm64** (Raspberry Pi 4/5, ARM NAS boxes); `docker pull` picks the right one.
 
 ```
 ghcr.io/depasseg/yardstick-community:<version>   # e.g. 1.2.7
 ghcr.io/depasseg/yardstick-community:latest
 ```
 
-Published with the permission of Yardstick Technologies LLC. **This is a community image, not an
+Published with the permission of Yardstick Technologies LLC and listed on their
+[download page](https://yardstickhome.com/download/). **This is a community image, not an
 official one, hence the name.** For problems with the container, open an issue here; for problems with
 Yardstick itself, use [their support](https://yardstickhome.com/support/).
 
@@ -57,18 +59,28 @@ behind Traefik, Caddy, nginx, Envoy and friends with nothing special.
 ## How the image is built and updated
 
 Yardstick releases often. [`build.yaml`](.github/workflows/build.yaml) runs every 6 hours:
-it downloads the vendor's `.deb`, reads its version, and if `ghcr.io/depasseg/yardstick-community:<version>`
-doesn't exist yet, builds the [Dockerfile](Dockerfile) and pushes it. So a new tag appears
-within a few hours of each release, and `latest` follows. Each image records the `.deb`'s
-SHA-256 in the label `io.yardstick.deb.sha256`.
+it reads the vendor's signed release list (`yardstickhome.com/release/latest.json`), and if
+`ghcr.io/depasseg/yardstick-community:<version>` doesn't exist yet, builds the
+[Dockerfile](Dockerfile) for amd64 and arm64 and pushes one multi-arch tag. So a new tag appears
+within a few hours of each release, and `latest` follows.
+
+What makes a build trustworthy:
+- The `.deb` is downloaded from the URL in the vendor's release list and its **SHA-256 is
+  checked** against the list before anything is unpacked; the build fails on a mismatch. The
+  hashes are also recorded on the image (labels `io.yardstick.deb.sha256.amd64` / `.arm64`).
+- The Debian base image is **pinned by digest** (Renovate bumps it), so a rebuild of the same
+  commit produces the same image.
+- The package is unpacked as-is; nothing inside is modified. Compare the image's `/opt/yardstick`
+  with your own `.deb` if you like.
 
 Tools such as Renovate, Watchtower or Diun can follow the tags for you.
 
 ### Build it yourself
 
 ```bash
-docker build -t yardstick .                                   # whatever the vendor serves today
-docker build --build-arg YARDSTICK_VERSION=1.2.7 -t yardstick:1.2.7 .   # must be that version
+docker build -t yardstick .                                   # the vendor's current release, your CPU's architecture
+docker build --build-arg YARDSTICK_VERSION=1.2.8 -t yardstick:1.2.8 .   # must be that version
+docker buildx build --platform linux/amd64,linux/arm64 -t yardstick .     # both at once (needs QEMU)
 ```
 
 ## Licence

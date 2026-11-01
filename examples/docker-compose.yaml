@@ -1,6 +1,6 @@
 services:
   yardstick:
-    image: ghcr.io/depasseg/yardstick-community:latest   # or pin a version, e.g. :1.2.7
+    image: ghcr.io/depasseg/yardstick-community:latest   # or pin a version, e.g. :1.2.8
     container_name: yardstick
     restart: unless-stopped
     ports:
