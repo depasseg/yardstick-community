@@ -1,0 +1,70 @@
+# Minimal Kubernetes example: one pod, a persistent volume, a Service.
+# Put your own Ingress / Gateway in front of the Service for HTTPS and a login.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: yardstick
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yardstick
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # one licence seat, one SQLite database: never two pods
+  selector:
+    matchLabels: {app: yardstick}
+  template:
+    metadata:
+      labels: {app: yardstick}
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: yardstick
+          image: ghcr.io/depasseg/yardstick:latest   # pin a version in production
+          ports:
+            - containerPort: 8477
+          env:
+            - {name: TZ, value: America/New_York}
+          startupProbe:
+            httpGet: {path: /api/status, port: 8477}
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            httpGet: {path: /api/status, port: 8477}
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+          resources:
+            requests: {cpu: 20m, memory: 256Mi}
+            limits: {memory: 2Gi}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/yardstick}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: yardstick}
+        - name: tmp
+          emptyDir: {sizeLimit: 1Gi}     # the binary unpacks itself here on every start
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yardstick
+spec:
+  selector: {app: yardstick}
+  ports:
+    - {name: http, port: 8477, targetPort: 8477}

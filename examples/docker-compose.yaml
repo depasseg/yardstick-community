@@ -1,0 +1,16 @@
+services:
+  yardstick:
+    image: ghcr.io/depasseg/yardstick:latest   # or pin a version, e.g. :1.2.7
+    container_name: yardstick
+    restart: unless-stopped
+    ports:
+      - "8477:8477"
+    environment:
+      TZ: America/New_York
+    volumes:
+      - yardstick-data:/var/lib/yardstick
+    # Optional: let Home Assistant discover it by mDNS (Linux hosts only).
+    # network_mode: host   # then drop `ports:`
+
+volumes:
+  yardstick-data:
