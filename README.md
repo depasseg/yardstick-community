@@ -76,6 +76,16 @@ What makes a build trustworthy:
 
 Tools such as Renovate, Watchtower or Diun can follow the tags for you.
 
+### Testing channel (testers only)
+
+Yardstick's testers get pre-release builds from `release/testing.json`, which only answers to
+a tester's licence key. A second workflow here, [`build-testing.yaml`](.github/workflows/build-testing.yaml),
+builds those with the repository owner's key (a repository secret) into the **private** package
+`ghcr.io/depasseg/yardstick-testing`. Those images are not for redistribution; this public image
+stays on stable releases. If you're a tester and want your own, the Dockerfile takes
+`--build-arg RELEASE_URL=https://yardstickhome.com/release/testing.json` and the key as a Docker
+secret (see the header of the Dockerfile).
+
 ### Build it yourself
 
 ```bash
