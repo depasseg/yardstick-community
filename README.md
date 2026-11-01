@@ -40,7 +40,7 @@ Kubernetes manifest in [`examples/kubernetes.yaml`](examples/kubernetes.yaml).
 | **Robot access** | Through your signed-in Yarbo account (cloud). No special network setup, no host networking needed. |
 | **Memory** | Grows slowly while recording; allow 1–2 GB. |
 | **Stopping** | The image stops with `SIGINT`, which closes the database cleanly. Give it 30 s (`docker stop -t 30`). |
-| **Updates** | Yardstick's built-in updater **can't run in the container** (it needs root and a writable `/opt`). The Settings page may still say an update is available. Pull a newer image tag instead; your data stays on the volume. |
+| **Updates** | Pull a newer image tag; your data stays on the volume. Yardstick's built-in updater doesn't apply here (the image is read-only); the image sets `YARDSTICK_CONTAINER=1`, which newer Yardstick versions read to point you at the image instead of an Update button. |
 | **Restores** | Yardstick only accepts a backup restore while the robot is docked and idle, and the restored history appears after a restart. |
 
 ### Home Assistant
@@ -65,9 +65,10 @@ it reads the vendor's signed release list (`yardstickhome.com/release/latest.jso
 within a few hours of each release, and `latest` follows.
 
 What makes a build trustworthy:
-- The `.deb` is downloaded from the URL in the vendor's release list and its **SHA-256 is
-  checked** against the list before anything is unpacked; the build fails on a mismatch. The
-  hashes are also recorded on the image (labels `io.yardstick.deb.sha256.amd64` / `.arm64`).
+- The `.deb` is downloaded from the URL in the vendor's release list, and its **SHA-256 and
+  Ed25519 signature are checked** against the list and Yardstick's release-signing key (the same
+  key Yardstick itself checks updates with) before anything is unpacked; the build fails on a
+  mismatch. The hashes are also recorded on the image (labels `io.yardstick.deb.sha256.amd64` / `.arm64`).
 - The Debian base image is **pinned by digest** (Renovate bumps it), so a rebuild of the same
   commit produces the same image.
 - The package is unpacked as-is; nothing inside is modified. Compare the image's `/opt/yardstick`
