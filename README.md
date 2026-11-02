@@ -75,6 +75,14 @@ What makes a build trustworthy:
   this repository's Security tab, and a CRITICAL one with a fix available stops the push. (Trivy
   sees the Debian packages and the libraries Yardstick bundles; it can't audit the vendor's own
   code, which is what the signature check is for.)
+- Each pushed image is **signed with Sigstore cosign** (keyless: the signature is tied to this
+  repository's workflow, not to a key anyone holds) and recorded in the public Rekor log. Verify
+  that an image really came from here before you run it:
+  ```bash
+  cosign verify ghcr.io/depasseg/yardstick-community:latest \
+    --certificate-identity-regexp '^https://github.com/depasseg/yardstick-community/' \
+    --certificate-oidc-issuer https://token.actions.githubusercontent.com
+  ```
 - The package is unpacked as-is; nothing inside is modified. Compare the image's `/opt/yardstick`
   with your own `.deb` if you like.
 
