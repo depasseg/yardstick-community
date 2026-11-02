@@ -10,14 +10,11 @@
 #   docker build -t yardstick .
 # Pin a version (fails if the release list serves another version):
 #   docker build --build-arg YARDSTICK_VERSION=1.2.8 -t yardstick:1.2.8 .
-# Build from another release list, e.g. Yardstick's test channel (for its testers):
-#   docker build --build-arg RELEASE_URL=https://yardstickhome.com/release/testing.json -t yardstick:test .
 
 # --- fetch and verify the vendor package -------------------------------------------------------
 FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 AS deb
 ARG TARGETARCH
 # The vendor's release list: version, per-architecture download URL, SHA-256 and signature.
-# latest.json = stable releases; testing.json = the test channel.
 ARG RELEASE_URL=https://yardstickhome.com/release/latest.json
 # Optional: the exact version this build must produce.
 ARG YARDSTICK_VERSION=
