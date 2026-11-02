@@ -10,28 +10,24 @@
 #   docker build -t yardstick .
 # Pin a version (fails if the release list serves another version):
 #   docker build --build-arg YARDSTICK_VERSION=1.2.8 -t yardstick:1.2.8 .
-# Test-channel builds (testers only; the downloads need your licence key):
-#   docker build --build-arg RELEASE_URL=https://yardstickhome.com/release/testing.json \
-#     --secret id=yardstick_license,env=YARDSTICK_LICENSE -t yardstick:test .
+# Build from another release list, e.g. Yardstick's test channel (for its testers):
+#   docker build --build-arg RELEASE_URL=https://yardstickhome.com/release/testing.json -t yardstick:test .
 
 # --- fetch and verify the vendor package -------------------------------------------------------
 FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 AS deb
 ARG TARGETARCH
 # The vendor's release list: version, per-architecture download URL, SHA-256 and signature.
-# latest.json = stable; testing.json = the test channel (needs the licence key, see above).
+# latest.json = stable releases; testing.json = the test channel.
 ARG RELEASE_URL=https://yardstickhome.com/release/latest.json
 # Optional: the exact version this build must produce.
 ARG YARDSTICK_VERSION=
 # Yardstick Technologies' Ed25519 release-signing key (raw public key, hex), from Mike Gustin,
 # 2026-11-01. Yardstick itself checks Linux updates against the same key.
 ARG SIGNING_KEY=912aee1dfecfba51562d30b98b433ba89c95b4612d6b60fc92eec7536b5a1323
-RUN --mount=type=secret,id=yardstick_license,required=false \
-    set -eux; \
+RUN set -eux; \
     apt-get update; apt-get install -y --no-install-recommends ca-certificates curl jq openssl; \
-    # Test-channel downloads answer only to Yardstick-like clients with a licence key.
-    hdr=""; if [ -s /run/secrets/yardstick_license ]; then \
-      hdr="X-Yardstick-License: $(cat /run/secrets/yardstick_license)"; fi; \
-    fetch() { curl -fsSL --retry 3 -A "yardstick-community-build" ${hdr:+-H "$hdr"} -o "$1" "$2"; }; \
+    # The vendor's server wants a Yardstick-like User-Agent for its release lists.
+    fetch() { curl -fsSL --retry 3 -A "yardstick-community-build" -o "$1" "$2"; }; \
     fetch /release.json "${RELEASE_URL}"; \
     version="$(jq -er .version /release.json)"; \
     url="$(jq -er ".linux.${TARGETARCH}.url" /release.json)"; \
