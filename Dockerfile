@@ -56,8 +56,12 @@ FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1de
 COPY --from=deb /pkg/opt/yardstick /opt/yardstick
 COPY --from=deb /pkg/usr/share/doc/yardstick /usr/share/doc/yardstick
 
+# Upgrade first: Debian publishes security fixes (trixie-security) days before the base image is
+# rebuilt, and the pinned digest only moves when Renovate bumps it. Without this, a fix that's
+# already out (e.g. apt 3.0.4, DSA-6607-1, 2026-11) still fails the Trivy scan.
 RUN set -eux; \
     apt-get update; \
+    apt-get upgrade -y --no-install-recommends; \
     apt-get install -y --no-install-recommends ca-certificates tzdata curl; \
     rm -rf /var/lib/apt/lists/*; \
     ln -s /opt/yardstick/yardstick /usr/bin/yardstick; \
