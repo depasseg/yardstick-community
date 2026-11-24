@@ -12,7 +12,7 @@
 #   docker build --build-arg YARDSTICK_VERSION=1.2.8 -t yardstick:1.2.8 .
 
 # --- fetch and verify the vendor package -------------------------------------------------------
-FROM debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2 AS deb
+FROM debian:trixie-slim@sha256:8aa5a7bf5a1955bddbe7d74fcdd0b91ab30e74362a8b73af672b0481b35b44a0 AS deb
 ARG TARGETARCH
 # The vendor's release list: version, per-architecture download URL, SHA-256 and signature.
 ARG RELEASE_URL=https://yardstickhome.com/release/latest.json
@@ -50,7 +50,7 @@ RUN set -eux; \
     echo "$version" > /pkg/opt/yardstick/VERSION
 
 # --- runtime image -----------------------------------------------------------------------------
-FROM debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+FROM debian:trixie-slim@sha256:8aa5a7bf5a1955bddbe7d74fcdd0b91ab30e74362a8b73af672b0481b35b44a0
 # The package's files, minus its systemd units. The maintainer scripts don't run; the container
 # replaces what postinst does (user, data dir, service).
 COPY --from=deb /pkg/opt/yardstick /opt/yardstick
